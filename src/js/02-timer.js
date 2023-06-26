@@ -4,86 +4,66 @@ import 'flatpickr/dist/flatpickr.min.css';
 let timerID = null;
 
 const refs = {
-  inputDate: document.getElementById('datetime-picker'),
-  btnStart: document.querySelector('button[data-start]'),
-
+  datePicker: document.getElementById('datetime-picker'),
+  startButton: document.querySelector('button[data-start]'),
   dataDaysEl: document.querySelector('span[data-days]'),
   dataHoursEl: document.querySelector('span[data-hours]'),
   dataMinutesEl: document.querySelector('span[data-minutes]'),
   dataSecondsEl: document.querySelector('span[data-seconds]'),
 };
 
-const optionsFlatpickr = {
+const options = {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
-  
+  inline: true,
   minuteIncrement: 1,
   onClose(selectedDates) {
-    const currentDate = new Date().getTime();
-    const timerInSeconds = selectedDates[0] - currentDate;
+    const selectedDate = selectedDates[0];
 
-    if (timerInSeconds <= 0) {
-      
-      Notify.failure('Please choose a date in the future');
-      return null;
+    if (selectedDate < new Date()) {
+      window.alert("Please choose a date in the future");
+      refs.startButton.disabled = true;
+    } else {
+      refs.startButton.disabled = false;
     }
-
-    const objTimer = convertMs(timerInSeconds);
-
-    renderTimer(objTimer);
-
-    refs.btnStart.disabled = false;
-    refs.inputDate.disabled = true;
   },
 };
 
-refs.btnStart.disabled = true;
-refs.btnStart.addEventListener('click', onClickStart);
+flatpickr(refs.datePicker, options);
 
-const objFlatpickr = flatpickr(refs.inputDate, optionsFlatpickr);
+refs.startButton.addEventListener('click', function () {
+  const selectedDate = flatpickr.parseDate(refs.datePicker.value, 'Y-m-d H:i');
+  const currentTime = new Date().getTime();
+  const selectedTime = selectedDate.getTime();
+  const countdownTime = selectedTime - currentTime;
 
+  startCountdown(countdownTime);
+});
 
-function onClickStart() {
-  refs.btnStart.disabled = true;
+function startCountdown(time) {
+    clearInterval(countdownInterval);
 
-  const selectTime = objFlatpickr.latestSelectedDateObj.getTime();
-  
-  timerID = setInterval(startTime, 1000, selectTime);
-}
+  countdownInterval = setInterval(function() {
+    const remainingTime = convertMs(time);
+    const formattedTime = formatTime(remainingTime);
+    countdownDisplay.textContent = formattedTime;
 
-function startTime(selectTime) {
-  let currentDate = selectTime - new Date().getTime();
+    if (time <= 0) {
+      clearInterval(countdownInterval);
+      countdownDisplay.textContent = "00:00:00:00";
+    }
 
-  if (currentDate <= 0) {
-    
-    clearInterval(timerID);
-    renderTimer({ days: '00', hours: '00', minutes: '00', seconds: '00' });
-    refs.btnStart.disabled = true;
-    refs.inputDate.disabled = false;
-    return;
-  }
-
-  const objTimer = convertMs(currentDate);
-  renderTimer(objTimer);
-}
-
-
-function renderTimer(objTimer) {
-  refs.dataDaysEl.innerText = String(objTimer.days).padStart(2, 0);
-  refs.dataHoursEl.innerText = String(objTimer.hours).padStart(2, 0);
-  refs.dataMinutesEl.innerText = String(objTimer.minutes).padStart(2, 0);
-  refs.dataSecondsEl.innerText = String(objTimer.seconds).padStart(2, 0);
+    time -= 1000;
+  }, 1000);
 }
 
 function convertMs(ms) {
-  
   const second = 1000;
   const minute = second * 60;
   const hour = minute * 60;
   const day = hour * 24;
 
-  
   const days = Math.floor(ms / day);
   const hours = Math.floor((ms % day) / hour);
   const minutes = Math.floor(((ms % day) % hour) / minute);
@@ -91,3 +71,25 @@ function convertMs(ms) {
 
   return { days, hours, minutes, seconds };
 }
+
+function addLeadingZero(value) {
+  return value.toString().padStart(2, '0');
+}
+
+function formatTime(time) {
+  const { days, hours, minutes, seconds } = time;
+
+  const formattedDays = addLeadingZero(days);
+  const formattedHours = addLeadingZero(hours);
+  const formattedMinutes = addLeadingZero(minutes);
+  const formattedSeconds = addLeadingZero(seconds);
+
+  return `${formattedDays}:${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
+
+
+
+
+
+

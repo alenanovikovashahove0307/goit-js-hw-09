@@ -12,16 +12,14 @@ function onStart() {
 }
 function onStop() {
   clearInterval(timerId);
-  btnStop.removeAttribute('disabled');
+  btnStart.removeAttribute('disabled');
 }
 function getRandomHexColor() {
   return `#${Math.floor(Math.random() * 16777215)
     .toString(16)
     .padStart(6, 0)}`;
 }
-function getRandomHexColor() {
-  return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, 0)}`;
-}
 function getBgColor() {
   body.style.backgroundColor = getRandomHexColor();
+  
 }
