@@ -6,10 +6,10 @@ let timerID = null;
 const refs = {
   datePicker: document.getElementById('datetime-picker'),
   startButton: document.querySelector('button[data-start]'),
-  dataDaysEl: document.querySelector('span[data-days]'),
-  dataHoursEl: document.querySelector('span[data-hours]'),
-  dataMinutesEl: document.querySelector('span[data-minutes]'),
-  dataSecondsEl: document.querySelector('span[data-seconds]'),
+  dataDaysEl: document.querySelector('[data-days]'),
+  dataHoursEl: document.querySelector('[data-hours]'),
+  dataMinutesEl: document.querySelector('[data-minutes]'),
+  dataSecondsEl: document.querySelector('[data-seconds]'),
 };
 
 const options = {
