@@ -1,5 +1,6 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import Notiflix from 'notiflix';
 
 let timerID = null;
 
@@ -16,13 +17,12 @@ const options = {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
-  inline: true,
   minuteIncrement: 1,
   onClose(selectedDates) {
     const selectedDate = selectedDates[0];
 
     if (selectedDate < new Date()) {
-      window.alert("Please choose a date in the future");
+      Notiflix.Notify.info('Please choose a date in the future');
       refs.startButton.disabled = true;
     } else {
       refs.startButton.disabled = false;
@@ -33,30 +33,38 @@ const options = {
 flatpickr(refs.datePicker, options);
 
 refs.startButton.addEventListener('click', function () {
-  const selectedDate = flatpickr.parseDate(refs.datePicker.value, 'Y-m-d H:i');
-  const currentTime = new Date().getTime();
-  const selectedTime = selectedDate.getTime();
-  const countdownTime = selectedTime - currentTime;
+  const selectedDate = new Date(refs.datePicker.value);
+  let countdownDuration = selectedDate.getTime() - Date.now();
 
-  startCountdown(countdownTime);
+  if (countdownDuration > 0) {
+    refs.startButton.disabled = true;
+
+    timerID = setInterval(function () {
+      countdownDuration -= 1000;
+
+      if (countdownDuration <= 0) {
+        clearInterval(timerID);
+      } else {
+        updateTimer(countdownDuration);
+      }
+    }, 1000);
+
+    updateTimer(countdownDuration);
+  }
 });
 
-function startCountdown(time) {
-    clearInterval(countdownInterval);
+function updateTimer(duration) {
+      const time = convertMs(duration);
 
-  countdownInterval = setInterval(function() {
-    const remainingTime = convertMs(time);
-    const formattedTime = formatTime(remainingTime);
-    countdownDisplay.textContent = formattedTime;
-
-    if (time <= 0) {
-      clearInterval(countdownInterval);
-      countdownDisplay.textContent = "00:00:00:00";
+      refs.dataDaysEl.textContent = addLeadingZero(time.days);
+      refs.dataHoursEl.textContent = addLeadingZero(time.hours);
+      refs.dataMinutesEl.textContent = addLeadingZero(time.minutes);
+      refs.dataSecondsEl.textContent = addLeadingZero(time.seconds);
     }
 
-    time -= 1000;
-  }, 1000);
-}
+    function addLeadingZero(value) {
+      return value.toString().padStart(2, '0');
+    }
 
 function convertMs(ms) {
   const second = 1000;
@@ -71,21 +79,10 @@ function convertMs(ms) {
 
   return { days, hours, minutes, seconds };
 }
+   
 
-function addLeadingZero(value) {
-  return value.toString().padStart(2, '0');
-}
 
-function formatTime(time) {
-  const { days, hours, minutes, seconds } = time;
 
-  const formattedDays = addLeadingZero(days);
-  const formattedHours = addLeadingZero(hours);
-  const formattedMinutes = addLeadingZero(minutes);
-  const formattedSeconds = addLeadingZero(seconds);
-
-  return `${formattedDays}:${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-}
 
 
 
